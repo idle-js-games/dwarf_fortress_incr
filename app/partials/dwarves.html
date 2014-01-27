@@ -1,0 +1,23 @@
+<p>Dwarves</p>
+
+<table>
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Labors</td>
+        </tr>
+    </thead>
+    <tr ng-repeat="dwarf in game.dwarves">
+        <td>
+            <input ng-model="dwarf.name">
+        </td>
+        <td>
+            <ul ui-sortable ng-model="dwarf.labors">
+                <li ng-repeat="labor in dwarf.labors" class="draggable">
+                    <input type="checkbox" ng-model="labor.isEnabled">
+                    {{ labor.name }}
+                </li>
+            </ul>
+        </td>
+    </tr>
+</table>
