@@ -10,6 +10,7 @@ FortressClicker.Game = (function()
         this.mapSize = 4096;
 
         this.jobDefinitions = FortressClicker.JobDefinitions;
+        this.jobCategories = FortressClicker.JobCategories;
         this.professions = FortressClicker.Professions;
 
         this.dwarves = [ ];
@@ -46,11 +47,13 @@ FortressClicker.Game = (function()
         {
             var job = new FortressClicker.Job(jobDefinition, this);
             this.jobQueue.push(job);
+            this.updateJobQueueSummaries();
         }
 
         this.removeJobFromQueue = function(job)
         {
             this.jobQueue.splice(this.jobQueue.indexOf(job), 1);
+            this.updateJobQueueSummaries();
         }
 
         // Runs the provided action in N ticks
@@ -75,6 +78,32 @@ FortressClicker.Game = (function()
                 }
                 this.delayedActions[this.tickCount] = undefined;
             }
+        }
+        
+        this.updateJobQueueSummaries = function()
+        {
+            var jobSummaries = _.reduce(
+                this.jobQueue, 
+                function(buckets, job) {
+                    var bucket = buckets[buckets.length - 1];
+            
+                    // Create a new bucket if needed.
+                    if (!bucket || bucket.name != job.name) {
+                        bucket = {
+                            name: job.name,
+                            jobs: []
+                        };
+                        buckets.push(bucket);
+                    }
+            
+                    // Add the job to the correct bucket
+                    bucket.jobs.push(job);
+                    return buckets;
+                }, 
+                [] // The starting buckets
+            );
+            
+            this.jobQueueSummaries = jobSummaries;
         }
     }
     

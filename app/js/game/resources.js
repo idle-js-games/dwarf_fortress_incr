@@ -15,3 +15,15 @@ FortressClicker.Resources = (function()
         Bread: "Bread",
     };
 })();
+
+FortressClicker.Resource = (function()
+{
+    function Resource(name, category, isVisible)
+    {
+        this.name = name;
+        this.category = category;
+        this.isVisible = isVisible;
+    }
+    
+    return Resource;
+})();

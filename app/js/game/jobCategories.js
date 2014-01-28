@@ -3,11 +3,11 @@
 var FortressClicker = FortressClicker || { };
 FortressClicker.JobCategories =
 {
+    Agriculture: "Agriculture",
     Wood: "Wood",
     Stone: "Stone",
     Metal: "Metal",
-    Gem: "Gem",
     Cloth: "Cloth",
+    Gem: "Gem",
     MiscCrafting: "Misc Crafting",
-    Agriculture: "Agriculture",
 };

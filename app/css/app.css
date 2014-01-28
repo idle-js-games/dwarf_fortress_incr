@@ -1,38 +1,118 @@
-/* app css stylesheet */
-
-.menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+#topBar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 32px;
+    background: black;
+    box-shadow: 0 -4px 8px #666 inset;
+    color: #ccc;
 }
 
-.menu:before {
-  content: "[";
+#sectionLeft {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 30%;
+    bottom: 0;
+    min-width: 100px;
+    overflow: hidden;
 }
 
-.menu:after {
-  content: "]";
+#sectionMiddle {
+    position: absolute;
+    left: 30%;
+    padding-left: 16px;
+    margin-right: 15px;
+    top: 0;
+    right: 318px;
+    bottom: 0;
+    min-width: 100px;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
-.menu > li {
-  display: inline;
+#sectionRight {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
-.menu > li:before {
-  content: "|";
-  padding-right: 0.3em;
+.seperatorLeft,
+.seperatorRight {
+    width: 16px;
+    height: 100%;
+    background: gray;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
 }
 
-.menu > li:nth-child(1):before {
-  content: "";
-  padding: 0;
+.seperatorLeft {
+    left: 30%;
 }
 
-.draggable {
-    cursor: move;
+.seperatorRight {
+    right: 317px;
+}
+
+#middleTop {
+    padding: 16px;
+    text-align: center;
+    position: relative;
+    padding-bottom: 32px;
+    font-size: 16px;
+    height: 64px;
+    overflow: hidden;
+}
+
+.seperatorBottom {
+    width: 100%;
+    height: 16px;
+    background: gray;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+#middleBottom {
+    position: absolute;
+    left: 16px;
+    right: 0;
+    top: 112px;
+    bottom: 0;
+}
+
+#game {
+    position: absolute;
+    left: 0;
+    top: 32px;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
 }
 
 .progress {
     margin-bottom: inherit;
+}
+
+.dwarfContainer {
+    position: relative;
+}
+
+.cancelButton {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 18px;
+}
+
+.selectProfession
+{
+    position: absolute;
+    right: 0;
 }

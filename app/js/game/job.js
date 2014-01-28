@@ -22,7 +22,12 @@ FortressClicker.Job = (function()
 
         this.work = function(dwarf)
         {
-            this.status = FortressClicker.JobStatuses.InProgress;
+            if (this.status == FortressClicker.JobStatuses.Pending)
+            {
+                this.game.removeJobFromQueue(this);
+                this.status = FortressClicker.JobStatuses.InProgress;
+            }
+            
             this.effortSpent++;
             this.percentComplete = (this.effortSpent / this.effortRequired) * 100;
             
@@ -34,15 +39,17 @@ FortressClicker.Job = (function()
         
         this.cancel = function()
         {
+            if (this.status == FortressClicker.JobStatuses.Pending)
+            {
+                this.game.removeJobFromQueue(this);
+            }
             this.onCancel(this.game);
-            this.game.removeJobFromQueue(this);
             this.status = FortressClicker.JobStatuses.Cancelled;
         }
 
         this.complete = function()
         {
             this.onComplete(this.game);
-            this.game.removeJobFromQueue(this);
             this.status = FortressClicker.JobStatuses.Completed;
         }
     }
