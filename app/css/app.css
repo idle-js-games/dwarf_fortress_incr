@@ -28,8 +28,6 @@
     right: 318px;
     bottom: 0;
     min-width: 100px;
-    overflow-x: hidden;
-    overflow-y: scroll;
 }
 
 #sectionRight {
@@ -37,8 +35,7 @@
     position: absolute;
     top: 0;
     right: 0;
-    overflow-x: hidden;
-    overflow-y: scroll;
+    width: 318px;
 }
 
 .seperatorLeft,
@@ -85,6 +82,8 @@
     right: 0;
     top: 112px;
     bottom: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 #game {

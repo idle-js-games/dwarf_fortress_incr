@@ -5,13 +5,13 @@ FortressClicker.Game = (function()
 {
     function Game()
     {
-        this.tickCount = 0;
         this.wealth = 0;
         this.mapSize = 4096;
 
         this.jobDefinitions = FortressClicker.JobDefinitions;
         this.jobCategories = FortressClicker.JobCategories;
         this.professions = FortressClicker.Professions;
+        this.calendar = new FortressClicker.Calendar();
 
         this.dwarves = [ ];
         this.resources = { };
@@ -34,7 +34,7 @@ FortressClicker.Game = (function()
 
         this.tick = function()
         {
-            this.tickCount++;
+            this.calendar.tick();
             this.runDelayedActions();
 
             for (var i = 0; i < this.dwarves.length; i++)
@@ -59,7 +59,7 @@ FortressClicker.Game = (function()
         // Runs the provided action in N ticks
         this.addDelayedAction = function(action, ticks)
         {
-            var tickToRun = this.tickCount + ticks;
+            var tickToRun = this.calendar.currentTick + ticks;
             if (this.delayedActions[tickToRun] === undefined)
             {
                 this.delayedActions[tickToRun] = [ ];
@@ -69,14 +69,14 @@ FortressClicker.Game = (function()
 
         this.runDelayedActions = function()
         {
-            var actionsToRun = this.delayedActions[this.tickCount];
+            var actionsToRun = this.delayedActions[this.calendar.currentTick];
             if (actionsToRun !== undefined)
             {
                 for (var i = 0; i < actionsToRun.length; i++)
                 {
                     actionsToRun[i]();
                 }
-                this.delayedActions[this.tickCount] = undefined;
+                this.delayedActions[this.calendar.currentTick] = undefined;
             }
         }
         

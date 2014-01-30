@@ -30,10 +30,14 @@
     <script src="js/game/jobStatuses.js"></script>
     <script src="js/game/jobDefinition.js"></script>
     <script src="js/game/jobDefinitions.js"></script>
+    <script src="js/game/calendar.js"></script>
     <script src="js/game/game.js"></script>
 </head>
 <body ng-controller="GameController">
-    <div id="topBar">Fortress Clicker v0.1</div>
+    <div id="topBar">
+        <div style="position: absolute; left: 0;">Fortress Clicker v0.1</div>
+        <div style="position: absolute; right: 0;">{{ game.calendar.currentDate }}</div>
+        </div>
     <div id="game">
         <div id="sectionLeft">
             <p>Dwarves</p>
@@ -87,16 +91,18 @@
         
         <div id="sectionRight">
             <p>Add Job</p>
-            <tabset>
-                <tab ng-repeat="(categoryId, categoryName) in game.jobCategories" heading="{{ categoryName }}">
-                    <button
-                        ng-repeat="jobDefinition in game.jobDefinitions | filter:{category:categoryId}"
-                        ng-click="game.addJobToQueue(jobDefinition)"
-                        ng-disabled="!jobDefinition.canCreate(game)">
-                        {{ jobDefinition.name }}
-                    </button>
-                </tab>
-            </tabset>
+            <accordion close-others="true">
+                <accordion-group ng-repeat="(categoryId, categoryName) in game.jobCategories" heading="{{ categoryName }}">
+                    <div style="width: 100%">
+                        <button
+                            ng-repeat="jobDefinition in game.jobDefinitions | filter:{category:categoryId}"
+                            ng-click="game.addJobToQueue(jobDefinition)"
+                            ng-disabled="!jobDefinition.canCreate(game)">
+                            {{ jobDefinition.name }}
+                        </button>
+                    </div>
+                </accordion-group>
+            </accordion>
             <p>Pending Jobs ({{ game.jobQueue.length }})</p>
             <div ng-repeat="jobSummary in game.jobQueueSummaries">
                 {{ jobSummary.name }} x{{ jobSummary.jobs.length }}
