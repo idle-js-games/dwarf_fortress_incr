@@ -15,6 +15,7 @@ FortressClicker.BuildingDefinitions = (function () {
     ];
     buildingDefinition.resources = [
         FortressClicker.Resources["Tree Clippings"].name,
+        FortressClicker.Resources.Saplings.name,
         FortressClicker.Resources.Trees.name,
         FortressClicker.Resources.Logs.name
     ];
