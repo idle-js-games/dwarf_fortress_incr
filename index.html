@@ -82,7 +82,7 @@
                     <div ng-repeat="resourceName in building.resources" style="width: 100%">
                         <span popover="{{ resourceName }}" popover-trigger="mouseenter" popover-placement="right">
                             <img
-                                src="img/{{ resourceName }}.png"
+                                src="img/{{ resourceName | lowercase }}.png"
                                 width="32"
                                 height="32"
                                 alt="{{ resourceName }}"
