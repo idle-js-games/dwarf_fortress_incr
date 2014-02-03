@@ -1,15 +1,117 @@
-<!DOCTYPE HTML>
-<html lang="en-US">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="refresh" content="1;url=http://fortressclicker.tropicosoftware.com/app/index.html">
-        <script type="text/javascript">
-            window.location.href = "http://fortressclicker.tropicosoftware.com/app/index.html"
-        </script>
-        <title>Page Redirection</title>
-    </head>
-    <body>
-        <!-- Note: don't tell people to `click` the link, just tell them that it is a link. -->
-        If you are not redirected automatically, follow the <a href='http://fortressclicker.tropicosoftware.com/app/index.html'>link to Fortress Clicker</a>.
-    </body>
+﻿<!doctype html>
+<html lang="en" ng-app="fortressClicker">
+<head>
+    <meta charset="utf-8">
+    <title>Fortress Clicker</title>
+    <link rel="stylesheet" href="lib/bootstrap/bootstrap.min.css"/>
+    <link rel="stylesheet" href="lib/ng-grid/ng-grid.min.css"/>
+    <link rel="stylesheet" href="css/app.css"/>
+
+    <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <script src="lib/angular/angular.js"></script>
+    <script src="lib/angular/angular-route.js"></script>
+    <script src="lib/ng-grid/ng-grid-2.0.7.min.js"></script>
+    <script src="lib/angular-ui/sortable.js"></script>
+    <script src="lib/bootstrap/ui-bootstrap-tpls-0.10.0.min.js"></script>
+    <script src="lib/underscore/underscore-min.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/controllers.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/directives.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/game/inventory.js"></script>
+    <script src="js/game/resources.js"></script>
+    <script src="js/game/nameGenerator.js"></script>
+    <script src="js/game/dwarf.js"></script>
+    <script src="js/game/job.js"></script>
+    <script src="js/game/jobCategories.js"></script>
+    <script src="js/game/labors.js"></script>
+    <script src="js/game/professions.js"></script>
+    <script src="js/game/jobStatuses.js"></script>
+    <script src="js/game/jobDefinition.js"></script>
+    <script src="js/game/jobDefinitions.js"></script>
+    <script src="js/game/building.js"></script>
+    <script src="js/game/buildingDefinition.js"></script>
+    <script src="js/game/buildingDefinitions.js"></script>
+    <script src="js/game/calendar.js"></script>
+    <script src="js/game/game.js"></script>
+</head>
+<body ng-controller="GameController">
+    <div id="topBar">
+        <div style="position: absolute; left: 0;">Fortress Clicker v0.1</div>
+        <div style="position: absolute; right: 0;">{{ game.calendar.currentDate }}</div>
+        </div>
+    <div id="game">
+        <div id="sectionLeft">
+            <p>Dwarves</p>
+            <div ng-repeat="dwarf in game.dwarves" class="dwarfContainer">
+                <span>{{ dwarf.name }}</span>
+                <select
+                    class="selectProfession"
+                    ng-model="dwarf.profession"
+                    ng-options="name for (name, profession) in game.professions"
+                    ng-change="dwarf.updateLabors()">
+                </select>
+                <progressbar value="dwarf.currentJob.percentComplete" type="success">
+                    <span style="color:black; white-space:nowrap;">
+                        {{ dwarf.currentJob.name || "Idle" }} - {{ dwarf.currentJob.effortSpent + " / " + dwarf.currentJob.effortRequired }}
+                    </span>
+                </progressbar>
+                <img
+                    src="img/cancel.png"
+                    width="16"
+                    height="16"
+                    ng-click="dwarf.currentJob.cancel()"
+                    ng-show="dwarf.currentJob"
+                    class="cancelButton" />
+            </div>
+        </div>
+        
+        <div class="seperatorLeft"></div>
+        
+        <div id="sectionMiddle">
+            <div id="middleTop">
+                <p>Fortress Wealth: {{ game.wealth }}☼</p>
+                <div class="seperatorBottom"></div>
+            </div>
+            <div id="middleBottom">
+                <p>Buildings</p>
+                <div ng-repeat="(buildingName, building) in game.buildings">
+                    <span>{{ buildingName }}</span>
+                    <div ng-repeat="resourceName in building.resources" style="width: 100%">
+                        <span popover="{{ resourceName }}" popover-trigger="mouseenter" popover-placement="right">
+                            <img
+                                src="img/{{ resourceName }}.png"
+                                width="32"
+                                height="32"
+                                alt="{{ resourceName }}"
+                                class="resourceImage" />
+                            <span>{{ game.inventory.getResourceQuantity(resourceName) | number:0 }}</span>
+                        </span>
+                    </div>
+                    <div style="width: 100%">
+                        <button
+                            ng-repeat="jobDefinition in building.jobDefinitions"
+                            ng-click="building.addJobToQueue(jobDefinition)"
+                            ng-disabled="!jobDefinition.canCreate(building.game)">
+                            {{ jobDefinition.name }}
+                        </button>
+                    </div>
+                    <p>Pending Jobs ({{ building.jobQueue.length }})</p>
+                    <div ng-repeat="jobSummary in building.jobQueueSummaries">
+                        {{ jobSummary.name }} x{{ jobSummary.jobs.length }}
+                        <button ng-click="jobSummary.jobs[0].cancel()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="seperatorRight"></div>
+        
+        <div id="sectionRight">
+            <p>Construction</p>
+        </div>
+    </div>
+</body>
 </html>
