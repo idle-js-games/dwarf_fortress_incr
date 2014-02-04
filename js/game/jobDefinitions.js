@@ -6,69 +6,78 @@ FortressClicker.JobDefinitions = (function () {
 
     var jobDefinition = new FortressClicker.JobDefinition();
     jobDefinition.name = "Take Clipping";
-    jobDefinition.category = FortressClicker.JobCategories.Agriculture;
     jobDefinition.requiredLabor = FortressClicker.Labors.Horticulture;
+    jobDefinition.skill = FortressClicker.Skills.Forester;
     jobDefinition.effortRequired = 25;
     jobDefinition.requiredResources[FortressClicker.Resources.Trees.name] = 1;
     jobDefinition.providedResources[FortressClicker.Resources["Tree Clippings"].name] = 2;
-    jobDefinitions.TakeClipping = jobDefinition;
+    jobDefinitions[jobDefinition.name] = jobDefinition;
 
     jobDefinition = new FortressClicker.JobDefinition();
     jobDefinition.name = "Plant Tree";
-    jobDefinition.category = FortressClicker.JobCategories.Agriculture;
     jobDefinition.requiredLabor = FortressClicker.Labors.Horticulture;
+    jobDefinition.skill = FortressClicker.Skills.Forester;
     jobDefinition.effortRequired = 25;
     jobDefinition.requiredResources[FortressClicker.Resources["Tree Clippings"].name] = 1;
     jobDefinition.providedResources[FortressClicker.Resources.Saplings.name] = 1;
-    jobDefinitions.PlantTree = jobDefinition;
+    jobDefinitions[jobDefinition.name] = jobDefinition;
 
     jobDefinition = new FortressClicker.JobDefinition();
     jobDefinition.name = "Fell Tree";
-    jobDefinition.category = FortressClicker.JobCategories.Agriculture;
     jobDefinition.requiredLabor = FortressClicker.Labors.Woodcutting;
+    jobDefinition.skill = FortressClicker.Skills.Lumberjack;
     jobDefinition.effortRequired = 25;
     jobDefinition.requiredResources[FortressClicker.Resources.Trees.name] = 2;
     jobDefinition.usedResources = {};
     jobDefinition.usedResources[FortressClicker.Resources.Trees.name] = 1;
     jobDefinition.providedResources[FortressClicker.Resources.Logs.name] = 1;
-    jobDefinitions.FellTree = jobDefinition;
+    jobDefinitions[jobDefinition.name] = jobDefinition;
 
     jobDefinition = new FortressClicker.JobDefinition();
     jobDefinition.name = "Plant Wheat";
-    jobDefinition.category = FortressClicker.JobCategories.Agriculture;
     jobDefinition.requiredLabor = FortressClicker.Labors.Farming;
+    jobDefinition.skill = FortressClicker.Skills.Farmer;
     jobDefinition.effortRequired = 25;
     jobDefinition.requiredResources[FortressClicker.Resources["Wheat Seeds"].name] = 1;
     jobDefinition.providedResources[FortressClicker.Resources["Planted Wheat"].name] = 1;
-    jobDefinitions.PlantWheat = jobDefinition;
+    jobDefinitions[jobDefinition.name] = jobDefinition;
 
     jobDefinition = new FortressClicker.JobDefinition();
     jobDefinition.name = "Harvest Wheat";
-    jobDefinition.category = FortressClicker.JobCategories.Agriculture;
     jobDefinition.requiredLabor = FortressClicker.Labors.Farming;
+    jobDefinition.skill = FortressClicker.Skills.Farmer;
     jobDefinition.effortRequired = 25;
     jobDefinition.requiredResources[FortressClicker.Resources["Harvestable Wheat"].name] = 1;
     jobDefinition.providedResources[FortressClicker.Resources.Wheat.name] = 1;
     jobDefinition.providedResources[FortressClicker.Resources["Wheat Seeds"].name] = 2;
-    jobDefinitions.HarvestWheat = jobDefinition;
+    jobDefinitions[jobDefinition.name] = jobDefinition;
 
     jobDefinition = new FortressClicker.JobDefinition();
     jobDefinition.name = "Bake Bread";
-    jobDefinition.category = FortressClicker.JobCategories.Agriculture;
     jobDefinition.requiredLabor = FortressClicker.Labors.Cooking;
+    jobDefinition.skill = FortressClicker.Skills.Cook;
     jobDefinition.effortRequired = 25;
     jobDefinition.requiredResources[FortressClicker.Resources.Wheat.name] = 1;
     jobDefinition.providedResources[FortressClicker.Resources.Bread.name] = 1;
-    jobDefinitions.BakeBread = jobDefinition;
+    jobDefinitions[jobDefinition.name] = jobDefinition;
 
     jobDefinition = new FortressClicker.JobDefinition();
     jobDefinition.name = "Brew Beer";
-    jobDefinition.category = FortressClicker.JobCategories.Agriculture;
     jobDefinition.requiredLabor = FortressClicker.Labors.Brewing;
+    jobDefinition.skill = FortressClicker.Skills.Brewer;
     jobDefinition.effortRequired = 25;
     jobDefinition.requiredResources[FortressClicker.Resources.Wheat.name] = 1;
     jobDefinition.providedResources[FortressClicker.Resources.Beer.name] = 1;
-    jobDefinitions.BrewBeer = jobDefinition;
+    jobDefinitions[jobDefinition.name] = jobDefinition;
+
+    jobDefinition = new FortressClicker.JobDefinition();
+    jobDefinition.name = "Cut Logs into Planks";
+    jobDefinition.requiredLabor = FortressClicker.Labors.Carpentry;
+    jobDefinition.skill = FortressClicker.Skills.Carpenter;
+    jobDefinition.effortRequired = 25;
+    jobDefinition.requiredResources[FortressClicker.Resources.Logs.name] = 1;
+    jobDefinition.providedResources[FortressClicker.Resources.Planks.name] = 1;
+    jobDefinitions[jobDefinition.name] = jobDefinition;
 
     return jobDefinitions;
 })();

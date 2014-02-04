@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>Fortress Clicker</title>
-    <link rel="stylesheet" href="lib/bootstrap/bootstrap.min.css"/>
-    <link rel="stylesheet" href="lib/ng-grid/ng-grid.min.css"/>
-    <link rel="stylesheet" href="css/app.css"/>
+    <link rel="stylesheet" href="lib/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="lib/ng-grid/ng-grid.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
 
     <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
     <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
@@ -24,6 +24,8 @@
     <script src="js/game/resources.js"></script>
     <script src="js/game/nameGenerator.js"></script>
     <script src="js/game/dwarf.js"></script>
+    <script src="js/game/skills.js"></script>
+    <script src="js/game/skillLevels.js"></script>
     <script src="js/game/job.js"></script>
     <script src="js/game/jobCategories.js"></script>
     <script src="js/game/labors.js"></script>
@@ -40,77 +42,128 @@
 <body ng-controller="GameController">
     <div id="topBar">
         <div style="position: absolute; left: 0;">Fortress Clicker v0.1</div>
-        <div style="position: absolute; right: 0;">{{ game.calendar.currentDate }}</div>
+        <div style="position: absolute; left: 250px; right: 250px;">
+            <button ng-click="game.isPaused = !game.isPaused">
+                <span ng-if="!game.isPaused">Pause Game</span>
+                <span ng-if="game.isPaused">Unpause Game</span>
+            </button>
         </div>
+        <div style="position: absolute; right: 0;">{{ game.calendar.currentDate }}</div>
+    </div>
     <div id="game">
         <div id="sectionLeft">
-            <p>Dwarves</p>
-            <div ng-repeat="dwarf in game.dwarves" class="dwarfContainer">
-                <span>{{ dwarf.name }}</span>
-                <select
-                    class="selectProfession"
-                    ng-model="dwarf.profession"
-                    ng-options="name for (name, profession) in game.professions"
-                    ng-change="dwarf.updateLabors()">
-                </select>
-                <progressbar value="dwarf.currentJob.percentComplete" type="success">
-                    <span style="color:black; white-space:nowrap;">
-                        {{ dwarf.currentJob.name || "Idle" }} - {{ dwarf.currentJob.effortSpent + " / " + dwarf.currentJob.effortRequired }}
-                    </span>
-                </progressbar>
-                <img
-                    src="img/cancel.png"
-                    width="16"
-                    height="16"
-                    ng-click="dwarf.currentJob.cancel()"
-                    ng-show="dwarf.currentJob"
-                    class="cancelButton" />
-            </div>
+            <p>Dwarves ({{ game.dwarves.length }})</p>
+            <accordion close-others="true">
+                <accordion-group ng-repeat="dwarf in game.dwarves" class="dwarfBody">
+                    <accordion-heading>
+                        <div>
+                            <span class="dwarfName">{{ dwarf.name }}</span>
+                            <span class="dwarfProfession">{{ dwarf.profession.name }}</span>
+                            <progressbar value="dwarf.currentJob.percentComplete" type="success" animate="false" class="dwarfJobProgressBar">
+                                <span class="dwarfJobProgressBarText">
+                                    {{ dwarf.currentJob.name || "Idle" }}
+                                    <span ng-if="dwarf.currentJob">- {{ dwarf.currentJob.effortSpent + " / " + dwarf.currentJob.effortRequired }}</span>
+                                </span>
+                            </progressbar>
+                        </div>
+                    </accordion-heading>
+                    Change Profession: <select ng-model="dwarf.profession"
+                                               ng-options="name for (name, profession) in game.professions"
+                                               ng-change="dwarf.updateLabors()"></select><br />
+                    <tabset>
+                        <tab heading="Stats">
+                            Nourishment: {{ dwarf.nourishment }}<br />
+                            Hydration: {{ dwarf.nourishment }}<br />
+                        </tab>
+                        <tab heading="Skills">
+                            <div ng-repeat="(skill, experience) in dwarf.skills">
+                                {{ game.skillLevels.getLevel(experience).name }} {{ skill }}
+                            </div>
+                        </tab>
+                        <tab heading="Attributes">
+                            TODO
+                        </tab>
+                    </tabset>
+                </accordion-group>
+            </accordion>
         </div>
-        
+
         <div class="seperatorLeft"></div>
-        
+
         <div id="sectionMiddle">
             <div id="middleTop">
                 <p>Fortress Wealth: {{ game.wealth }}☼</p>
                 <div class="seperatorBottom"></div>
             </div>
             <div id="middleBottom">
-                <p>Buildings</p>
-                <div ng-repeat="(buildingName, building) in game.buildings">
-                    <span>{{ buildingName }}</span>
-                    <div ng-repeat="resourceName in building.resources" style="width: 100%">
-                        <span popover="{{ resourceName }}" popover-trigger="mouseenter" popover-placement="right">
-                            <img
-                                src="img/{{ resourceName | lowercase }}.png"
-                                width="32"
-                                height="32"
-                                alt="{{ resourceName }}"
-                                class="resourceImage" />
-                            <span>{{ game.inventory.getResourceQuantity(resourceName) | number:0 }}</span>
-                        </span>
-                    </div>
-                    <div style="width: 100%">
-                        <button
-                            ng-repeat="jobDefinition in building.jobDefinitions"
-                            ng-click="building.addJobToQueue(jobDefinition)"
-                            ng-disabled="!jobDefinition.canCreate(building.game)">
-                            {{ jobDefinition.name }}
-                        </button>
-                    </div>
-                    <p>Pending Jobs ({{ building.jobQueue.length }})</p>
-                    <div ng-repeat="jobSummary in building.jobQueueSummaries">
-                        {{ jobSummary.name }} x{{ jobSummary.jobs.length }}
-                        <button ng-click="jobSummary.jobs[0].cancel()">Cancel</button>
-                    </div>
-                </div>
+                <tabset>
+                    <tab heading="Buildings">
+                        <div ng-repeat="building in game.buildings | filter:{isVisible: true} | orderBy:'name'" class="building">
+                            <h4>{{ building.name }}</h4>
+                            <div class="resourceImages">
+                                <div ng-repeat="resourceName in building.resources" class="resourceImage">
+                                    <img ng-src="img/{{ resourceName | lowercase }}.png"
+                                         popover="{{ resourceName }}"
+                                         popover-trigger="mouseenter"
+                                         popover-placement="top"
+                                         alt="{{ resourceName }}" />
+                                    <span>{{ game.inventory.getResourceQuantity(resourceName) | number:0 }}</span>
+                                </div>
+                            </div>
+                            <div class="buildingJobs">
+                                <button class="btn btn-primary"
+                                        ng-repeat="jobDefinition in building.jobDefinitions"
+                                        ng-click="building.addJobToQueue(jobDefinition)"
+                                        ng-disabled="!jobDefinition.canCreate(building.game)">
+                                    {{ jobDefinition.name }}
+                                </button>
+                            </div>
+                            <div class="buildingJobQueue">
+                                <p>Pending Jobs ({{ building.jobQueue.length }})</p>
+                                <div ng-repeat="jobSummary in building.jobQueueSummaries">
+                                    {{ jobSummary.name }} x{{ jobSummary.jobs.length }}
+                                    <button ng-click="jobSummary.jobs[0].cancel()">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </tab>
+                    <tab heading="Nobles">
+                        TODO
+                    </tab>
+                    <tab heading="Manager">
+                        TODO
+                    </tab>
+                </tabset>
             </div>
         </div>
-        
+
         <div class="seperatorRight"></div>
-        
+
         <div id="sectionRight">
             <p>Construction</p>
+            <div ng-repeat="buildingDefinition in game.buildingDefinitions | filter:{isBuilt: false}">
+                {{ buildingDefinition.name }}<br />
+                Requires:
+                <div ng-repeat="(resourceName, count) in buildingDefinition.buildJob.requiredResources" style="width: 100%">
+                    <span popover="{{ resourceName }}" popover-trigger="mouseenter" popover-placement="right">
+                        <img ng-src="img/{{ resourceName | lowercase }}.png"
+                             width="32"
+                             height="32"
+                             alt="{{ resourceName }}"
+                             class="resourceImage" />
+                        <span>{{ count | number:0 }}</span>
+                    </span>
+                </div>
+                <button ng-click="game.buildings[0].addJobToQueue(buildingDefinition.buildJob)"
+                        ng-disabled="!buildingDefinition.buildJob.canCreate(game)">
+                    Build {{ buildingDefinition.name }}
+                </button>
+            </div>
+            <p>Pending Construction Jobs ({{ game.buildings[0].jobQueue.length }})</p>
+            <div ng-repeat="jobSummary in game.buildings[0].jobQueueSummaries">
+                {{ jobSummary.name }} x{{ jobSummary.jobs.length }}
+                <button ng-click="jobSummary.jobs[0].cancel()">Cancel</button>
+            </div>
         </div>
     </div>
 </body>

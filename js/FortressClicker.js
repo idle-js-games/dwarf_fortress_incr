@@ -46,6 +46,14 @@ var FortressClicker = FortressClicker || {};
 FortressClicker.BuildingDefinition = (function () {
 return function () {
 this.requiredResources = {};
+this.canBuild = function() {
+for (var requiredResource in this.requiredResources) {
+if (game.inventory.getResourceQuantity(requiredResource) < this.requiredResources[requiredResource]) {
+return false;
+}
+}
+return true;
+};
 };
 })();
 'use strict';
@@ -53,16 +61,22 @@ var FortressClicker = FortressClicker || {};
 FortressClicker.BuildingDefinitions = (function () {
 var buildingDefinitions = {};
 var buildingDefinition = new FortressClicker.BuildingDefinition();
+buildingDefinition.name = "Builder's Hut";
+buildingDefinition.isBuildable = false;
+buildingDefinition.initialBuilding = true;
+buildingDefinitions[buildingDefinition.name] = buildingDefinition;
+buildingDefinition = new FortressClicker.BuildingDefinition();
 buildingDefinition.name = "Forest";
 buildingDefinition.isBuildable = false;
 buildingDefinition.initialBuilding = true;
 buildingDefinition.jobDefinitions = [
-FortressClicker.JobDefinitions.TakeClipping,
-FortressClicker.JobDefinitions.PlantTree,
-FortressClicker.JobDefinitions.FellTree,
+FortressClicker.JobDefinitions["Take Clipping"],
+FortressClicker.JobDefinitions["Plant Tree"],
+FortressClicker.JobDefinitions["Fell Tree"],
 ];
 buildingDefinition.resources = [
 FortressClicker.Resources["Tree Clippings"].name,
+FortressClicker.Resources.Saplings.name,
 FortressClicker.Resources.Trees.name,
 FortressClicker.Resources.Logs.name
 ];
@@ -72,8 +86,8 @@ buildingDefinition.name = "Open Field";
 buildingDefinition.isBuildable = false;
 buildingDefinition.initialBuilding = true;
 buildingDefinition.jobDefinitions = [
-FortressClicker.JobDefinitions.PlantWheat,
-FortressClicker.JobDefinitions.HarvestWheat
+FortressClicker.JobDefinitions["Plant Wheat"],
+FortressClicker.JobDefinitions["Harvest Wheat"]
 ];
 buildingDefinition.resources = [
 FortressClicker.Resources["Wheat Seeds"].name,
@@ -87,13 +101,28 @@ buildingDefinition.name = "Camp Kitchen";
 buildingDefinition.isBuildable = false;
 buildingDefinition.initialBuilding = true;
 buildingDefinition.jobDefinitions = [
-FortressClicker.JobDefinitions.BakeBread,
-FortressClicker.JobDefinitions.BrewBeer
+FortressClicker.JobDefinitions["Bake Bread"],
+FortressClicker.JobDefinitions["Brew Beer"]
 ];
 buildingDefinition.resources = [
 FortressClicker.Resources["Wheat"].name,
 FortressClicker.Resources.Bread.name,
 FortressClicker.Resources.Beer.name
+];
+buildingDefinitions[buildingDefinition.name] = buildingDefinition;
+buildingDefinition = new FortressClicker.BuildingDefinition();
+buildingDefinition.name = "Carpenter's Workshop";
+buildingDefinition.isBuildable = true;
+buildingDefinition.initialBuilding = false;
+buildingDefinition.buildJob = new FortressClicker.JobDefinition();
+buildingDefinition.buildJob.effortRequired = 250;
+buildingDefinition.buildJob.requiredResources[FortressClicker.Resources.Logs.name] = 25;
+buildingDefinition.jobDefinitions = [
+FortressClicker.JobDefinitions["Cut Logs into Planks"],
+];
+buildingDefinition.resources = [
+FortressClicker.Resources.Logs.name,
+FortressClicker.Resources.Planks.name
 ];
 buildingDefinitions[buildingDefinition.name] = buildingDefinition;
 return buildingDefinitions;
@@ -417,63 +446,63 @@ FortressClicker.JobDefinitions = (function () {
 var jobDefinitions = {};
 var jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Take Clipping";
-jobDefinition.category = FortressClicker.JobCategories.Agriculture;
 jobDefinition.requiredLabor = FortressClicker.Labors.Horticulture;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Trees.name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources["Tree Clippings"].name] = 2;
-jobDefinitions.TakeClipping = jobDefinition;
+jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Plant Tree";
-jobDefinition.category = FortressClicker.JobCategories.Agriculture;
 jobDefinition.requiredLabor = FortressClicker.Labors.Horticulture;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources["Tree Clippings"].name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Saplings.name] = 1;
-jobDefinitions.PlantTree = jobDefinition;
+jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Fell Tree";
-jobDefinition.category = FortressClicker.JobCategories.Agriculture;
 jobDefinition.requiredLabor = FortressClicker.Labors.Woodcutting;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Trees.name] = 2;
 jobDefinition.usedResources = {};
 jobDefinition.usedResources[FortressClicker.Resources.Trees.name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Logs.name] = 1;
-jobDefinitions.FellTree = jobDefinition;
+jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Plant Wheat";
-jobDefinition.category = FortressClicker.JobCategories.Agriculture;
 jobDefinition.requiredLabor = FortressClicker.Labors.Farming;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources["Wheat Seeds"].name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources["Planted Wheat"].name] = 1;
-jobDefinitions.PlantWheat = jobDefinition;
+jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Harvest Wheat";
-jobDefinition.category = FortressClicker.JobCategories.Agriculture;
 jobDefinition.requiredLabor = FortressClicker.Labors.Farming;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources["Harvestable Wheat"].name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Wheat.name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources["Wheat Seeds"].name] = 2;
-jobDefinitions.HarvestWheat = jobDefinition;
+jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Bake Bread";
-jobDefinition.category = FortressClicker.JobCategories.Agriculture;
 jobDefinition.requiredLabor = FortressClicker.Labors.Cooking;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Wheat.name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Bread.name] = 1;
-jobDefinitions.BakeBread = jobDefinition;
+jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Brew Beer";
-jobDefinition.category = FortressClicker.JobCategories.Agriculture;
 jobDefinition.requiredLabor = FortressClicker.Labors.Brewing;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Wheat.name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Beer.name] = 1;
-jobDefinitions.BrewBeer = jobDefinition;
+jobDefinitions[jobDefinition.name] = jobDefinition;
+jobDefinition = new FortressClicker.JobDefinition();
+jobDefinition.name = "Cut Logs into Planks";
+jobDefinition.requiredLabor = FortressClicker.Labors.Carpentry;
+jobDefinition.effortRequired = 25;
+jobDefinition.requiredResources[FortressClicker.Resources.Logs.name] = 1;
+jobDefinition.requiredResources[FortressClicker.Resources.Planks.name] = 1;
+jobDefinitions[jobDefinition.name] = jobDefinition;
 return jobDefinitions;
 })();
 'use strict';
@@ -657,6 +686,7 @@ resources["Planted Wheat"] = { name: "Planted Wheat" };
 resources.Wheat = { name: "Wheat" };
 resources.Bread = { name: "Bread", nourishment: 1000 };
 resources.Beer = { name: "Beer", hydration: 1000 };
+resources.Planks = { name: "Planks" };
 // Growth
 resources.Saplings.changesTo = resources.Trees;
 resources.Saplings.changeTime = 100;

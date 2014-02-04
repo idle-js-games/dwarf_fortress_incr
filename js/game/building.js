@@ -6,6 +6,7 @@ FortressClicker.Building = (function () {
         this.game = game;
         this.name = buildingDefinition.name;
         this.resources = buildingDefinition.resources;
+        this.isVisible = buildingDefinition.isVisible;
         this.jobDefinitions = buildingDefinition.jobDefinitions;
         this.jobQueue = [];
 

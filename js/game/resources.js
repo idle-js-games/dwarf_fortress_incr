@@ -14,6 +14,7 @@ FortressClicker.Resources = (function () {
     resources.Wheat = { name: "Wheat" };
     resources.Bread = { name: "Bread", nourishment: 1000 };
     resources.Beer = { name: "Beer", hydration: 1000 };
+    resources.Planks = { name: "Planks" };
 
     // Growth
     resources.Saplings.changesTo = resources.Trees;
