@@ -5,6 +5,7 @@ return function (game, buildingDefinition) {
 this.game = game;
 this.name = buildingDefinition.name;
 this.resources = buildingDefinition.resources;
+this.isVisible = buildingDefinition.isVisible;
 this.jobDefinitions = buildingDefinition.jobDefinitions;
 this.jobQueue = [];
 this.tick = function() {
@@ -45,6 +46,8 @@ this.jobQueueSummaries = jobSummaries;
 var FortressClicker = FortressClicker || {};
 FortressClicker.BuildingDefinition = (function () {
 return function () {
+this.isVisible = true;
+this.isBuilt = false;
 this.requiredResources = {};
 this.canBuild = function() {
 for (var requiredResource in this.requiredResources) {
@@ -59,15 +62,14 @@ return true;
 'use strict';
 var FortressClicker = FortressClicker || {};
 FortressClicker.BuildingDefinitions = (function () {
-var buildingDefinitions = {};
+var buildingDefinitions = [];
 var buildingDefinition = new FortressClicker.BuildingDefinition();
 buildingDefinition.name = "Builder's Hut";
-buildingDefinition.isBuildable = false;
+buildingDefinition.isVisible = false;
 buildingDefinition.initialBuilding = true;
-buildingDefinitions[buildingDefinition.name] = buildingDefinition;
+buildingDefinitions.push(buildingDefinition);
 buildingDefinition = new FortressClicker.BuildingDefinition();
 buildingDefinition.name = "Forest";
-buildingDefinition.isBuildable = false;
 buildingDefinition.initialBuilding = true;
 buildingDefinition.jobDefinitions = [
 FortressClicker.JobDefinitions["Take Clipping"],
@@ -80,11 +82,16 @@ FortressClicker.Resources.Saplings.name,
 FortressClicker.Resources.Trees.name,
 FortressClicker.Resources.Logs.name
 ];
-buildingDefinitions[buildingDefinition.name] = buildingDefinition;
+buildingDefinitions.push(buildingDefinition);
 buildingDefinition = new FortressClicker.BuildingDefinition();
-buildingDefinition.name = "Open Field";
-buildingDefinition.isBuildable = false;
-buildingDefinition.initialBuilding = true;
+buildingDefinition.name = "Farmer's Hut";
+buildingDefinition.buildJob = new FortressClicker.JobDefinition();
+buildingDefinition.buildJob.name = "Build " + buildingDefinition.name;
+buildingDefinition.buildJob.requiredLabor = FortressClicker.Labors.Construction;
+buildingDefinition.buildJob.skill = FortressClicker.Skills.Builder;
+buildingDefinition.buildJob.effortRequired = 25;
+buildingDefinition.buildJob.requiredResources[FortressClicker.Resources.Logs.name] = 25;
+buildingDefinition.buildJob.providedBuilding = buildingDefinition;
 buildingDefinition.jobDefinitions = [
 FortressClicker.JobDefinitions["Plant Wheat"],
 FortressClicker.JobDefinitions["Harvest Wheat"]
@@ -95,11 +102,16 @@ FortressClicker.Resources["Planted Wheat"].name,
 FortressClicker.Resources["Harvestable Wheat"].name,
 FortressClicker.Resources["Wheat"].name
 ];
-buildingDefinitions[buildingDefinition.name] = buildingDefinition;
+buildingDefinitions.push(buildingDefinition);
 buildingDefinition = new FortressClicker.BuildingDefinition();
 buildingDefinition.name = "Camp Kitchen";
-buildingDefinition.isBuildable = false;
-buildingDefinition.initialBuilding = true;
+buildingDefinition.buildJob = new FortressClicker.JobDefinition();
+buildingDefinition.buildJob.name = "Build " + buildingDefinition.name;
+buildingDefinition.buildJob.requiredLabor = FortressClicker.Labors.Construction;
+buildingDefinition.buildJob.skill = FortressClicker.Skills.Builder;
+buildingDefinition.buildJob.effortRequired = 25;
+buildingDefinition.buildJob.requiredResources[FortressClicker.Resources.Logs.name] = 25;
+buildingDefinition.buildJob.providedBuilding = buildingDefinition;
 buildingDefinition.jobDefinitions = [
 FortressClicker.JobDefinitions["Bake Bread"],
 FortressClicker.JobDefinitions["Brew Beer"]
@@ -109,14 +121,16 @@ FortressClicker.Resources["Wheat"].name,
 FortressClicker.Resources.Bread.name,
 FortressClicker.Resources.Beer.name
 ];
-buildingDefinitions[buildingDefinition.name] = buildingDefinition;
+buildingDefinitions.push(buildingDefinition);
 buildingDefinition = new FortressClicker.BuildingDefinition();
 buildingDefinition.name = "Carpenter's Workshop";
-buildingDefinition.isBuildable = true;
-buildingDefinition.initialBuilding = false;
 buildingDefinition.buildJob = new FortressClicker.JobDefinition();
-buildingDefinition.buildJob.effortRequired = 250;
+buildingDefinition.buildJob.name = "Build " + buildingDefinition.name;
+buildingDefinition.buildJob.requiredLabor = FortressClicker.Labors.Construction;
+buildingDefinition.buildJob.skill = FortressClicker.Skills.Builder;
+buildingDefinition.buildJob.effortRequired = 25;
 buildingDefinition.buildJob.requiredResources[FortressClicker.Resources.Logs.name] = 25;
+buildingDefinition.buildJob.providedBuilding = buildingDefinition;
 buildingDefinition.jobDefinitions = [
 FortressClicker.JobDefinitions["Cut Logs into Planks"],
 ];
@@ -124,7 +138,7 @@ buildingDefinition.resources = [
 FortressClicker.Resources.Logs.name,
 FortressClicker.Resources.Planks.name
 ];
-buildingDefinitions[buildingDefinition.name] = buildingDefinition;
+buildingDefinitions.push(buildingDefinition);
 return buildingDefinitions;
 })();
 'use strict';
@@ -200,21 +214,40 @@ return "th";
 };
 })();
 'use strict';
-var FortressClicker = FortressClicker || { };
-FortressClicker.Dwarf = (function() {
-return function(game, profession) {
+var FortressClicker = FortressClicker || {};
+FortressClicker.Dwarf = (function () {
+return function (game, name, profession) {
 this.game = game;
 this.profession = profession;
-this.name = new FortressClicker.NameGenerator().generate();
+this.name = name;
 this.currentJob = null;
 this.nourishment = 1000;
 this.hydration = 1000;
-this.isIdle = function() {
+this.skills = {};
+this.isIdle = function () {
 return this.currentJob === null;
 };
-this.tick = function() {
+this.isHungry = function () {
+return this.nourishment < 100;
+};
+this.isThirsty = function() {
+return this.hydration < 100;
+};
+this.tick = function () {
 if (this.currentJob !== null && this.currentJob.status == FortressClicker.JobStatuses.Cancelled) {
 this.currentJob = null;
+}
+if (this.isIdle() && this.isThirsty()) {
+var drinkingJob = this.createDrinkingJob();
+if (drinkingJob !== null) {
+this.currentJob = drinkingJob;
+}
+}
+if (this.isIdle() && this.isHungry()) {
+var eatingJob = this.createEatingJob();
+if (eatingJob !== null) {
+this.currentJob = eatingJob;
+}
 }
 if (this.isIdle()) {
 var job = this.game.getNextJob(this);
@@ -225,9 +258,55 @@ this.currentJob = job;
 if (!this.isIdle()) {
 this.currentJob.work(this);
 if (this.currentJob.status == FortressClicker.JobStatuses.Completed) {
+if (this.currentJob.skill !== undefined) {
+if (this.skills[this.currentJob.skill] === undefined) {
+this.skills[this.currentJob.skill] = 0;
+}
+this.skills[this.currentJob.skill]++;
+}
 this.currentJob = null;
 }
 }
+this.nourishment = Math.max(0, this.nourishment - 1);
+this.hydration = Math.max(0, this.hydration - 1);
+};
+this.createEatingJob = function () {
+var bestAvailableFoodResource =
+_.chain(FortressClicker.Resources)
+.filter(function (resource) { return resource.nourishment > 0; })
+.sortBy(function (resource) { return -resource.nourishment; })
+.filter(function (resource) { return game.inventory.getResourceQuantity(resource) > 0; })
+.first()
+.value();
+if (bestAvailableFoodResource !== undefined && bestAvailableFoodResource !== null) {
+var eatingJobDefinition = new FortressClicker.JobDefinition();
+eatingJobDefinition.name = "Eating " + bestAvailableFoodResource.name;
+eatingJobDefinition.effortRequired = 50;
+eatingJobDefinition.isCancelable = false;
+eatingJobDefinition.usedResources[bestAvailableFoodResource.name] = 1;
+eatingJobDefinition.providedNourishment = bestAvailableFoodResource.nourishment;
+return new FortressClicker.Job(eatingJobDefinition, this.game.buildings[0]);
+}
+return null;
+};
+this.createDrinkingJob = function() {
+var bestAvailableDrinkResource =
+_.chain(FortressClicker.Resources)
+.filter(function (resource) { return resource.hydration > 0; })
+.sortBy(function (resource) { return -resource.hydration; })
+.filter(function (resource) { return game.inventory.getResourceQuantity(resource) > 0; })
+.first()
+.value();
+if (bestAvailableDrinkResource !== undefined && bestAvailableDrinkResource !== null) {
+var drinkingJobDefinition = new FortressClicker.JobDefinition();
+drinkingJobDefinition.name = "Drinking " + bestAvailableDrinkResource.name;
+drinkingJobDefinition.effortRequired = 50;
+drinkingJobDefinition.isCancelable = false;
+drinkingJobDefinition.usedResources[bestAvailableDrinkResource.name] = 1;
+drinkingJobDefinition.providedHydration = bestAvailableDrinkResource.hydration;
+return new FortressClicker.Job(drinkingJobDefinition, this.game.buildings[0]);
+}
+return null;
 };
 };
 })();
@@ -236,20 +315,22 @@ var FortressClicker = FortressClicker || {};
 FortressClicker.Game = (function () {
 return function () {
 this.wealth = 0;
-this.mapSize = 4096;
 this.jobDefinitions = FortressClicker.JobDefinitions;
 this.jobCategories = FortressClicker.JobCategories;
+this.buildingDefinitions = FortressClicker.BuildingDefinitions;
 this.professions = FortressClicker.Professions;
+this.skillLevels = FortressClicker.SkillLevels;
 this.calendar = new FortressClicker.Calendar();
 this.inventory = new FortressClicker.Inventory(this.calendar);
-this.buildings = {};
+this.buildings = [];
 this.dwarves = [];
-this.resources = {};
 this.tick = function () {
+if (!this.isPaused) {
 this.calendar.tick();
 this.inventory.tick();
 for (var i = 0; i < this.dwarves.length; i++) {
 this.dwarves[i].tick();
+}
 }
 };
 this.getNextJob = function (dwarf) {
@@ -265,18 +346,24 @@ return job;
 };
 return null;
 };
-this.inventory.addResource(FortressClicker.Resources.Trees, 10);
-this.inventory.addResource(FortressClicker.Resources["Wheat Seeds"], 10);
-this.dwarves.push(new FortressClicker.Dwarf(this, FortressClicker.Professions.Farmer));
-this.dwarves.push(new FortressClicker.Dwarf(this, FortressClicker.Professions.Farmer));
-this.dwarves.push(new FortressClicker.Dwarf(this, FortressClicker.Professions.Woodcutter));
-this.dwarves.push(new FortressClicker.Dwarf(this, FortressClicker.Professions.Woodcutter));
-this.dwarves.push(new FortressClicker.Dwarf(this, FortressClicker.Professions.Builder));
-this.dwarves.push(new FortressClicker.Dwarf(this, FortressClicker.Professions.Builder));
-for (var buildingDefinitionName in FortressClicker.BuildingDefinitions) {
-var buildingDefinition = FortressClicker.BuildingDefinitions[buildingDefinitionName];
+this.addBuilding = function(buildingDefinition) {
+this.buildings.push(new FortressClicker.Building(this, buildingDefinition));
+buildingDefinition.isBuilt = true;
+};
+this.inventory.addResource(FortressClicker.Resources.Trees, 500);
+this.inventory.addResource(FortressClicker.Resources.Logs, 500);
+this.inventory.addResource(FortressClicker.Resources["Wheat Seeds"], 25);
+var dwarfNames = new FortressClicker.NameGenerator().generate(6);
+this.dwarves.push(new FortressClicker.Dwarf(this, dwarfNames[0], FortressClicker.Professions.Farmer));
+this.dwarves.push(new FortressClicker.Dwarf(this, dwarfNames[1], FortressClicker.Professions.Farmer));
+this.dwarves.push(new FortressClicker.Dwarf(this, dwarfNames[2], FortressClicker.Professions.Woodcutter));
+this.dwarves.push(new FortressClicker.Dwarf(this, dwarfNames[3], FortressClicker.Professions.Woodcutter));
+this.dwarves.push(new FortressClicker.Dwarf(this, dwarfNames[4], FortressClicker.Professions.Woodcutter));
+this.dwarves.push(new FortressClicker.Dwarf(this, dwarfNames[5], FortressClicker.Professions.Builder));
+for (var i = 0; i < this.buildingDefinitions.length; i++) {
+var buildingDefinition = this.buildingDefinitions[i];
 if (buildingDefinition.initialBuilding) {
-this.buildings[buildingDefinitionName] = new FortressClicker.Building(this, buildingDefinition);
+this.addBuilding(buildingDefinition);
 }
 }
 };
@@ -363,32 +450,59 @@ this.effortSpent = 0;
 this.effortRequired = jobDefinition.effortRequired;
 this.requiredLabor = jobDefinition.requiredLabor;
 this.requiredResources = jobDefinition.requiredResources;
+this.usedResources = jobDefinition.usedResources;
 this.providedResources = jobDefinition.providedResources;
-this.onCancel = jobDefinition.onCancel;
-this.onComplete = jobDefinition.onComplete;
-this.customOnComplete = jobDefinition.customOnComplete;
+this.providedBuilding = jobDefinition.providedBuilding;
+this.providedNourishment = jobDefinition.providedNourishment;
+this.providedHydration = jobDefinition.providedHydration;
 this.status = FortressClicker.JobStatuses.Pending;
-jobDefinition.onCreate(this.building.game);
-this.work = function () {
+this.skill = jobDefinition.skill;
+this.isCancelable = true;
+for (var usedResource in this.usedResources) {
+this.building.game.inventory.removeResource(usedResource, this.usedResources[usedResource]);
+}
+if (this.providedBuilding !== undefined) {
+this.providedBuilding.isBuilt = true;
+}
+this.work = function (dwarf) {
 if (this.status == FortressClicker.JobStatuses.Pending) {
 this.building.removeJobFromQueue(this);
 this.status = FortressClicker.JobStatuses.InProgress;
 }
-this.effortSpent++;
+var dwarfSkillLevel = FortressClicker.SkillLevels.getLevel(dwarf.skills[this.skill] || 0).number;
+var adjustedEffort = 1 + 1 * (dwarfSkillLevel / 10);
+this.effortSpent += adjustedEffort;
 this.percentComplete = (this.effortSpent / this.effortRequired) * 100;
 if (this.effortSpent >= this.effortRequired) {
-this.complete();
+this.complete(dwarf);
 }
 };
 this.cancel = function () {
 if (this.status == FortressClicker.JobStatuses.Pending) {
 this.building.removeJobFromQueue(this);
 }
-this.onCancel(this.building.game);
+for (var usedResource in this.usedResources) {
+this.building.game.inventory.addResource(usedResource, this.usedResources[usedResource]);
+}
+if (this.providedBuilding !== undefined) {
+this.providedBuilding.isBuilt = false;
+}
 this.status = FortressClicker.JobStatuses.Cancelled;
 };
-this.complete = function () {
-this.onComplete(this.building.game);
+this.complete = function (dwarf) {
+for (var providedResource in this.providedResources) {
+this.building.game.inventory.addResource(providedResource, this.providedResources[providedResource]);
+}
+if (this.providedBuilding !== undefined) {
+this.building.game.addBuilding(this.providedBuilding);
+this.providedBuilding.isBuilt = true;
+}
+if (this.providedNourishment !== undefined) {
+dwarf.nourishment += this.providedNourishment;
+}
+if (this.providedHydration !== undefined) {
+dwarf.hydration += this.providedHydration;
+}
 this.status = FortressClicker.JobStatuses.Completed;
 };
 };
@@ -420,24 +534,6 @@ return false;
 }
 return true;
 };
-this.onCreate = function (game) {
-for (var usedResource in this.usedResources) {
-game.inventory.removeResource(usedResource, this.usedResources[usedResource]);
-}
-};
-this.onCancel = function (game) {
-for (var usedResource in this.usedResources) {
-game.inventory.addResource(usedResource, this.usedResources[usedResource]);
-}
-};
-this.onComplete = function (game) {
-for (var providedResource in this.providedResources) {
-game.inventory.addResource(providedResource, this.providedResources[providedResource]);
-}
-if (this.customOnComplete !== undefined) {
-this.customOnComplete(game);
-}
-};
 };
 })();
 'use strict';
@@ -447,6 +543,7 @@ var jobDefinitions = {};
 var jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Take Clipping";
 jobDefinition.requiredLabor = FortressClicker.Labors.Horticulture;
+jobDefinition.skill = FortressClicker.Skills.Forester;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Trees.name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources["Tree Clippings"].name] = 2;
@@ -454,6 +551,7 @@ jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Plant Tree";
 jobDefinition.requiredLabor = FortressClicker.Labors.Horticulture;
+jobDefinition.skill = FortressClicker.Skills.Forester;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources["Tree Clippings"].name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Saplings.name] = 1;
@@ -461,6 +559,7 @@ jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Fell Tree";
 jobDefinition.requiredLabor = FortressClicker.Labors.Woodcutting;
+jobDefinition.skill = FortressClicker.Skills.Lumberjack;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Trees.name] = 2;
 jobDefinition.usedResources = {};
@@ -470,6 +569,7 @@ jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Plant Wheat";
 jobDefinition.requiredLabor = FortressClicker.Labors.Farming;
+jobDefinition.skill = FortressClicker.Skills.Farmer;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources["Wheat Seeds"].name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources["Planted Wheat"].name] = 1;
@@ -477,6 +577,7 @@ jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Harvest Wheat";
 jobDefinition.requiredLabor = FortressClicker.Labors.Farming;
+jobDefinition.skill = FortressClicker.Skills.Farmer;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources["Harvestable Wheat"].name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Wheat.name] = 1;
@@ -485,6 +586,7 @@ jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Bake Bread";
 jobDefinition.requiredLabor = FortressClicker.Labors.Cooking;
+jobDefinition.skill = FortressClicker.Skills.Cook;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Wheat.name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Bread.name] = 1;
@@ -492,6 +594,7 @@ jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Brew Beer";
 jobDefinition.requiredLabor = FortressClicker.Labors.Brewing;
+jobDefinition.skill = FortressClicker.Skills.Brewer;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Wheat.name] = 1;
 jobDefinition.providedResources[FortressClicker.Resources.Beer.name] = 1;
@@ -499,9 +602,10 @@ jobDefinitions[jobDefinition.name] = jobDefinition;
 jobDefinition = new FortressClicker.JobDefinition();
 jobDefinition.name = "Cut Logs into Planks";
 jobDefinition.requiredLabor = FortressClicker.Labors.Carpentry;
+jobDefinition.skill = FortressClicker.Skills.Carpenter;
 jobDefinition.effortRequired = 25;
 jobDefinition.requiredResources[FortressClicker.Resources.Logs.name] = 1;
-jobDefinition.requiredResources[FortressClicker.Resources.Planks.name] = 1;
+jobDefinition.providedResources[FortressClicker.Resources.Planks.name] = 1;
 jobDefinitions[jobDefinition.name] = jobDefinition;
 return jobDefinitions;
 })();
@@ -549,11 +653,9 @@ Construction: "Construction",
 };
 })();
 'use strict';
-var FortressClicker = FortressClicker || { };
-FortressClicker.NameGenerator = (function()
-{
-function NameGenerator()
-{
+var FortressClicker = FortressClicker || {};
+FortressClicker.NameGenerator = (function () {
+return function () {
 var names = [
 "Alaric", "Aldin", "Alfginnar", "Algrim", "Alrik", "Arik", "Argam",
 "Arngrim", "Asabelle", "Azram", "Baldrick", "Balik", "Balin", "Balzud",
@@ -584,12 +686,23 @@ var names = [
 "Thorin", "Thorlek", "Thorgrim", "Throbbi", "Throbin", "Thrung", "Trygg",
 "Ulfar", "Ulrik", "Ulther", "Urist", "Yorri",
 ];
-this.generate = function()
-{
-return names[Math.floor(Math.random() * names.length)];
+this.generate = function (count) {
+var generatedNames = [];
+while (generatedNames.length < count) {
+var name = names[Math.floor(Math.random() * names.length)];
+if (generatedNames.indexOf(name) === -1) {
+generatedNames.push(name);
 }
 }
-return NameGenerator;
+return generatedNames;
+};
+};
+})();
+'use strict';
+var FortressClicker = FortressClicker || {};
+FortressClicker.Nobles = (function () {
+return function() {
+};
 })();
 'use strict';
 var FortressClicker = FortressClicker || { };
@@ -693,4 +806,54 @@ resources.Saplings.changeTime = 100;
 resources["Planted Wheat"].changesTo = resources["Harvestable Wheat"];
 resources["Planted Wheat"].changeTime = 100;
 return resources;
+})();
+'use strict';
+var FortressClicker = FortressClicker || {};
+FortressClicker.SkillLevels = (function () {
+var levels = [
+{ number: -5, name: "Dabbling", minimum: 0, },
+{ number: -4, name: "Novice", minimum: 50, },
+{ number: -3, name: "Adequate", minimum: 110, },
+{ number: -2, name: "Competent", minimum: 180, },
+{ number: -1, name: "Skilled", minimum: 260, },
+{ number: 0, name: "Proficient", minimum: 350, },
+{ number: 1, name: "Talented", minimum: 450, },
+{ number: 2, name: "Adept", minimum: 560, },
+{ number: 3, name: "Expert", minimum: 680, },
+{ number: 4, name: "Professional", minimum: 810, },
+{ number: 5, name: "Accomplished", minimum: 950, },
+{ number: 6, name: "Great", minimum: 1100, },
+{ number: 7, name: "Master", minimum: 1260, },
+{ number: 8, name: "High Master", minimum: 1430, },
+{ number: 9, name: "Grand Master", minimum: 1610, },
+{ number: 10, name: "Legendary", minimum: 1800, },
+{ number: 11, name: "Legendary", minimum: 2000, },
+{ number: 12, name: "Legendary", minimum: 2210, },
+{ number: 13, name: "Legendary", minimum: 2430, },
+{ number: 14, name: "Legendary", minimum: 2660, },
+{ number: 15, name: "Legendary", minimum: 2900, },
+];
+return {
+getLevel: function (experience) {
+for (var i = levels.length - 1; i > -1; i--) {
+if (experience >= levels[i].minimum) {
+return levels[i];
+}
+}
+}
+};
+})();
+'use strict';
+var FortressClicker = FortressClicker || {};
+FortressClicker.Skills = (function () {
+return {
+Farmer: "Farmer",
+Forester: "Forester",
+Lumberjack: "Lumberjack",
+Carpenter: "Carpenter",
+Cook: "Cook",
+Brewer: "Brewer",
+Miner: "Miner",
+Builder: "Builder",
+};
 })();

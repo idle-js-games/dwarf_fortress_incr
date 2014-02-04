@@ -66,8 +66,11 @@
     <Content Include="js\game\jobStatuses.js" />
     <Content Include="js\game\labors.js" />
     <Content Include="js\game\nameGenerator.js" />
+    <Content Include="js\game\nobles.js" />
     <Content Include="js\game\professions.js" />
     <Content Include="js\game\resources.js" />
+    <Content Include="js\game\skillLevels.js" />
+    <Content Include="js\game\skills.js" />
     <Content Include="js\services.js" />
     <Content Include="lib\angular-ui\sortable.js" />
     <Content Include="lib\angular\angular-animate.js" />
