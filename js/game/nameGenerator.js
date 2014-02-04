@@ -1,10 +1,8 @@
 'use strict';
 
-var FortressClicker = FortressClicker || { };
-FortressClicker.NameGenerator = (function()
-{
-    function NameGenerator()
-    {
+var FortressClicker = FortressClicker || {};
+FortressClicker.NameGenerator = (function () {
+    return function () {
         var names = [
             "Alaric", "Aldin", "Alfginnar", "Algrim", "Alrik", "Arik", "Argam",
             "Arngrim", "Asabelle", "Azram", "Baldrick", "Balik", "Balin", "Balzud",
@@ -35,12 +33,17 @@ FortressClicker.NameGenerator = (function()
             "Thorin", "Thorlek", "Thorgrim", "Throbbi", "Throbin", "Thrung", "Trygg",
             "Ulfar", "Ulrik", "Ulther", "Urist", "Yorri",
         ];
-        
-        this.generate = function()
-        {
-            return names[Math.floor(Math.random() * names.length)];
-        }
-    }
-    
-    return NameGenerator;
+
+        this.generate = function (count) {
+            var generatedNames = [];
+            while (generatedNames.length < count) {
+                var name = names[Math.floor(Math.random() * names.length)];
+                if (generatedNames.indexOf(name) === -1) {
+                    generatedNames.push(name);
+                }
+            }
+
+            return generatedNames;
+        };
+    };
 })();

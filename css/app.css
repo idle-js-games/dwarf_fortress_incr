@@ -16,7 +16,8 @@
     width: 30%;
     bottom: 0;
     min-width: 100px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 #sectionMiddle {
@@ -25,7 +26,7 @@
     padding-left: 16px;
     margin-right: 15px;
     top: 0;
-    right: 318px;
+    right: 288px;
     bottom: 0;
     min-width: 100px;
 }
@@ -35,7 +36,9 @@
     position: absolute;
     top: 0;
     right: 0;
-    width: 318px;
+    width: 288px;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 .seperatorLeft,
@@ -54,7 +57,7 @@
 }
 
 .seperatorRight {
-    right: 317px;
+    right: 287px;
 }
 
 #middleTop {
@@ -99,22 +102,86 @@
     margin-bottom: inherit;
 }
 
-.dwarfContainer {
-    position: relative;
+.dwarfBody {
+    background-color: #FFF8DC;
 }
 
-.cancelButton {
-    position: absolute;
-    right: 0;
+    .dwarfBody > .panel-heading {
+        background-color: #EEE8AA;
+    }
+
+.dwarfJobCancelButton {
+    position: relative;
     bottom: 0;
+    right: 0;
     height: 18px;
 }
 
-.selectProfession {
-    position: absolute;
-    right: 0;
+.dwarfName {
+    position: relative;
+    top: 0;
+    left: 0;
 }
 
-.resourceImage {
-    border: 2px black solid;
+.dwarfProfession {
+    float: right;
+}
+
+.dwarfJobProgressBar {
+    position: relative;
+    background-color: lightgray;
+}
+
+.dwarfJobProgressBarText {
+    white-space: nowrap;
+    color: black;
+    float: left;
+    margin-left: 10px;
+}
+
+.building {
+    margin: 10px;
+    clear: both;
+}
+
+    .building > .resourceImages {
+        float: left;
+        width: 33%;
+    }
+
+        .building > .resourceImages > .resourceImage {
+            float: left;
+        }
+
+            .building > .resourceImages > .resourceImage > img {
+                border: 2px gray solid;
+                margin: 7px;
+                width: 32px;
+                height: 32px;
+            }
+
+    .building > .buildingJobs {
+        width: 25%;
+        float: right;
+    }
+
+        .building > .buildingJobs > button {
+            display: block;
+            width: 100%;
+        }
+
+    .building > .buildingJobQueue {
+        margin-left: 33%;
+        margin-right: 25%;
+    }
+
+.nav,
+.pagination,
+.carousel,
+.panel-title a {
+    cursor: pointer;
+}
+
+.popup {
+    z-index: 900;
 }
